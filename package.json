@@ -27,5 +27,8 @@
     "solc": "0.5.16",
     "truffle": "5.11.5",
     "truffle-contract": "^3.0.6"
+  },
+  "dependencies": {
+    "solidity-util": "github:willitscale/solidity-util"
   }
 }

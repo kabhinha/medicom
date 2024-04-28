@@ -1,7 +1,10 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT 
 pragma solidity >=0.4.22 <0.9.0;
+pragma experimental ABIEncoderV2;
 
-contract HealthRecordSystem {
+import "./SupplyChain.sol";
+
+contract HealthRecordSystem is SupplyChain {
     struct HealthRecord {
         string data;
         address patientPublicKey;
@@ -9,89 +12,76 @@ contract HealthRecordSystem {
         bool encrypted;
     }
 
+    struct Patient {
+        uint256 patientID;
+        string name;
+        uint256 dateOfBirth;
+        uint256 medicalHistoryID;
+        bool exists; 
+        uint[] medicationHistory; // Add medication history
+    }
+
+    struct MedicalRecord {
+        uint256 medicalRecordID;
+        string data;
+        uint256 hash; // Hash references Patient.medicalHistoryID
+    }
+
+    struct Stakeholder {
+        uint256 stakeholderID;
+        string name;
+        string stakeholderType; // Doctor, Lab, Researcher, etc.
+    }
+
+    struct AccessPolicy {
+        uint256 accessPolicyID;
+        uint256 patientID;
+        uint256 stakeholderID;
+        string permissionLevel; // Read-only, Read-Write, Delete
+    }
+
+    struct Certificate {
+        uint256 certificateID;
+        uint256 stakeholderID;
+        string issuedBy; // Certificate Authority
+        uint256 validUntil;
+    }
+
+    // Mappings
+    mapping(address => Patient) public patients;
+    mapping(uint256 => MedicalRecord) public medicalRecords;
+    mapping(address => Stakeholder) public stakeholders;
+    mapping(uint256 => AccessPolicy) public accessPolicies;
+    mapping(uint256 => Certificate) public certificates;
     mapping(address => HealthRecord) public healthRecords;
 
-    function createUpdateHealthRecord(
-        address doctor,
-        address patient,
-        string memory data,
-        bool permissionGrant,
-        string memory role
-    ) public returns (bool) {
-        if (permissionGrant && keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked("Doctor"))) {
-            // Create Pacenv for HR in IPFS
-            string memory encryptedData = encryptData(data);
-            
-            // Create session key
-            bytes32 sessionKey = generateSessionKey();
-            
-            // Send encrypted data to patient and doctor
-            sendEncryptedData(patient, doctor, encryptedData, sessionKey);
-            
-            // Update health record
-            updateHealthRecord(patient, encryptedData);
-            
-            return true;
-        } else {
-            return false;
-        }
+
+    // Events
+    event HealthRecordUpdated(address indexed patient, string medicationInstanceID, uint256 indexed batchID);
+    event HealthRecordUpdatedWithBatch(uint256 indexed batchID, string batchInfo);
+
+    // Update health record with medication dispensation information
+    function updateHealthRecord(address patient, string memory medicationInstanceID, uint256 batchID) public {
+        // Update health record logic
+        // Here you can add code to update the health record with medication instance ID and batch ID
+        // For demonstration, we'll simply emit an event
+        emit HealthRecordUpdated(patient, medicationInstanceID, batchID);
     }
-    
-    function create_Update_HR(
-        address patient,
-        address doctor,
-        string memory doctorPublicKey,
-        bytes32 sessionKey,
-        string memory encryptedData
-    ) public {
-        // Decrypt doctor's public key using session key
-        string memory decryptedDoctorKey = decrypt(doctorPublicKey, sessionKey);
-        
-        // Decrypt encrypted data using session key
-        string memory decryptedData = decrypt(encryptedData, sessionKey);
-        
-        // Perform update operation on health record
-        string memory updatedData = updateHealthRecord(patient, decryptedData);
-        
-        // Encrypt updated data using session key
-        string memory encryptedUpdatedData = encryptData(updatedData);
-        
-        // Store encrypted updated data in IPFS
-        storeInIPFS(encryptedUpdatedData);
+
+    // Update health record with batch information
+    function updateHealthRecordWithBatch(address patient, uint256 batchID, string memory batchInfo) public {
+        // Update health record with batch information logic
+        // Here you can add code to update the health record with batch information
+        // For demonstration, we'll simply emit an event
+        emit HealthRecordUpdatedWithBatch(batchID, batchInfo);
     }
-    
-    function encryptData(string memory data) private pure returns (string memory) {
-        // Perform encryption algorithm
-        // For simplicity, let's assume it's a basic encryption algorithm
-        return data;
-    }
-    
-    function decrypt(string memory encryptedData, bytes32 sessionKey) private pure returns (string memory) {
-        // Perform decryption using session key
-        // For simplicity, let's assume it's a basic decryption algorithm
-        return encryptedData;
-    }
-    
-    function generateSessionKey() private view returns (bytes32) {
-        // Generate session key using a cryptographic function
-        // For simplicity, let's assume it's a random generation
-        return keccak256(abi.encodePacked(block.timestamp, block.difficulty));
-    }
-    
-    function sendEncryptedData(address patient, address doctor, string memory encryptedData, bytes32 sessionKey) private {
-        // Send encrypted data to patient and doctor
-        // Implementation details omitted for simplicity
-    }
-    
-    function updateHealthRecord(address patient, string memory data) private pure returns (string memory) {
-        // Perform update operation on health record
-        // For simplicity, let's assume it's a basic update operation
-        return data;
-    }
-    
-    function storeInIPFS(string memory data) private pure returns (bytes32) {
-        // Simulate storing data in IPFS by returning a hash of the data
-        bytes32 ipfsHash = keccak256(abi.encodePacked(data));
-        return ipfsHash;
+
+    // Get batch information
+    function getBatchInfo(string memory batchID) public view returns (Batch memory) {
+        // Get batch information logic
+        // Here you can add code to retrieve batch information based on the batch ID
+        // For demonstration, we'll return a dummy batch information
+        Batch memory _batch = batches[batchID];
+        return _batch;
     }
 }
